@@ -1,0 +1,8 @@
+*.gz
+*.zip
+*.jar
+.vagrant/*
+
+*.war
+
+*.lock
