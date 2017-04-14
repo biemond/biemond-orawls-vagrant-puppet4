@@ -3,6 +3,43 @@
 #
 # setup a new weblogic domain
 #
+# @example standard domain example
+#   orawls::domain{'Wls1221':
+#     domain_template                      => "standard",
+#     domain_name                          => "Wls1221",
+#     development_mode                     => false,
+#     adminserver_address                  => '10.10.10.10',
+#     adminserver_listen_on_all_interfaces => true,
+#     adminserver_port                     => 7101,
+#     nodemanager_port                     => 5557,
+#     nodemanager_secure_listener          => false,
+#     weblogic_password                    => weblogic1',
+#     jsse_enabled                         => true,
+#     log_dir                              => '/var/log/weblogic',
+#     java_arguments                       => { 'ADM' =>  "-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m"},
+#   }
+#
+#   orawls::domain{'Wls1221':
+#     domain_template                       => "standard",
+#     domain_name                           => "Wls1221",
+#     development_mode                      => false,
+#     adminserver_address                   => '10.10.10.10',
+#     adminserver_ssl_port                  => 7002,
+#     adminserver_port                      => 7001,
+#     nodemanager_port                      => 5555,
+#     weblogic_password                     => weblogic1',
+#     jsse_enabled                          => true,
+#     log_dir                               => '/var/log/weblogic',
+#     custom_trust                          => true,
+#     trust_keystore_file                   => '/vagrant/trust.jks',
+#     trust_keystore_passphrase             => 'welcome',
+#     custom_identity                       => true, 
+#     custom_identity_keystore_filename     => '/vagrant/identity_admin.jks',
+#     custom_identity_keystore_passphrase   => 'welcome',
+#     custom_identity_alias                 => 'admin',
+#     custom_identity_privatekey_passphrase => 'welcome',
+#   }
+#  
 # @param version used weblogic software like 1036
 # @param wls_domains_dir root directory for all the WebLogic domains
 # @param middleware_home_dir directory of the Oracle software inside the oracle base directory
@@ -679,7 +716,7 @@ define orawls::domain (
         require => Exec["execwlst ${domain_name} ${title}"],
       }
 
-      if ( $version <= 1212 ){
+      if ( $version <= 1213 ){
         $source_mod = 'puppet:///modules/orawls/mod_wl_ohs.conf'
       } else {
         $source_mod = 'puppet:///modules/orawls/mod_wl_ohs_12c.conf'

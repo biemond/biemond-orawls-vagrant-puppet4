@@ -3,6 +3,41 @@
 #
 # installs FMW software like ADF, FORMS, OIM, WC, WCC, OSB, SOA Suite, B2B, MFT
 #
+# @example installing FMW
+#   orawls::fmw{'webtier1221':
+#     fmw_product          => 'web',
+#     fmw_file1            => "fmw_12.2.1.2.0_ohs_linux64_Disk1_1of1.zip",
+#     oracle_base_home_dir => '/opt/oracle',
+#   }
+#
+#   orawls::fmw{'soa1221':
+#     fmw_product          => 'soa',
+#     fmw_file1            => "fmw_12.2.1.2.0_soa_Disk1_1of1.zip",
+#     oracle_base_home_dir => '/opt/oracle',
+#   }
+#
+#   orawls::fmw{'osb1221':
+#     fmw_product          => 'osb',
+#     fmw_file1            => "fmw_12.2.1.2.0_osb_Disk1_1of1.zip",
+#     oracle_base_home_dir => '/opt/oracle',
+#   }
+#
+#   orawls::fmw{'webtier12212':
+#     version                   => 12212,
+#     fmw_product               => 'web',
+#     fmw_file1                 => "fmw_12.2.1.2.0_ohs_linux64_Disk1_1of1.zip",
+#     oracle_base_home_dir      => '/opt/oracle',
+#     ohs_mode:                 =>  "standalone",
+#     jdk_home_dir              => '/usr/java/latest',
+#     oracle_base_home_dir      => "/opt/oracle",
+#     middleware_home_dir       => "/opt/oracle/middleware12c",
+#     weblogic_home_dir         => "/opt/oracle/middleware12c/wlserver",
+#     download_dir              => "/var/tmp/install",
+#     puppet_download_mnt_point => "/software",
+#     log_output                => true,
+#     remote_file               => false
+#   }
+#
 # @param version used weblogic software like 1036
 # @param middleware_home_dir directory of the Oracle software inside the oracle base directory
 # @param weblogic_home_dir directory of the WebLogic software inside the middleware directory
@@ -53,6 +88,7 @@ define orawls::fmw(
   Optional[String] $oracle_inventory_dir                  = undef,
   Boolean $remote_file                                    = $::orawls::weblogic::remote_file,
   Optional[String] $orainstpath_dir                       = lookup('orawls::orainst_dir'),
+  Boolean $cleanup_install_files                          = true,
 )
 {
 
@@ -92,7 +128,7 @@ define orawls::fmw(
       }
     }
     default: {
-      fail("Unrecognized operating system ${acts['kernel']}, please use it on a Linux, Solaris host")
+      fail("Unrecognized operating system ${facts['kernel']}, please use it on a Linux, Solaris host")
     }
 
   }
@@ -777,6 +813,48 @@ define orawls::fmw(
         require     => [File["${download_dir}/${sanitised_title}_silent.rsp"],
                         Orawls::Utils::Orainst["create oraInst for ${name}"],
                         Exec["extract ${fmw_file1} for ${name}"],],
+      }
+    }
+
+    # cleanup
+    if ( $cleanup_install_files ) {
+      exec { "remove extract folder ${title}":
+        command => "rm -rf ${download_dir}/${sanitised_title}",
+        user    => 'root',
+        group   => 'root',
+        path    => $exec_path,
+        cwd     => $temp_dir,
+        require => Exec["install ${sanitised_title}"],
+        }
+      if ( $remote_file == true ){
+        exec { "remove ${fmw_file1} ${title}":
+          command => "rm -rf ${download_dir}/${fmw_file1}",
+          user    => 'root',
+          group   => 'root',
+          path    => $exec_path,
+          cwd     => $temp_dir,
+          require => Exec["install ${sanitised_title}"],
+        }
+        if ( $total_files > 1 ) {
+          exec { "remove ${fmw_file2} ${title}":
+            command => "rm -rf ${download_dir}/${fmw_file2}",
+            user    => 'root',
+            group   => 'root',
+            path    => $exec_path,
+            cwd     => $temp_dir,
+            require => Exec["install ${sanitised_title}"],
+          }
+        }
+        if ( $total_files > 2 ) {
+          exec { "remove ${fmw_file3} ${title}":
+            command => "rm -rf ${download_dir}/${fmw_file3}",
+            user    => 'root',
+            group   => 'root',
+            path    => $exec_path,
+            cwd     => $temp_dir,
+            require => Exec["install ${sanitised_title}"],
+          }
+        }
       }
     }
   }
