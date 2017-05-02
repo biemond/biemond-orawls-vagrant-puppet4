@@ -2,7 +2,7 @@
 
 m = ls('/JDBCStores',returnMap='true')
 
-f = open_file("name;datasource;prefix_name;target;targettype;domain")
+f = open_file("name;datasource;prefix_name;target;targettype;domain", tmp_script)
 for token in m:
     print '___'+token+'___'
     cd('/JDBCStores/'+token)
@@ -10,7 +10,7 @@ for token in m:
     datasourceObject = get('DataSource')
     datasource = datasourceObject.getKeyProperty('Name')
 
-    prefix_name = get('PrefixName')
+    prefix_name = get_attribute_value('PrefixName')
 
     target, targetType = retrieve_target_list('/JDBCStores/'+token)
 
